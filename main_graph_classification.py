@@ -689,14 +689,6 @@ if __name__ == '__main__':
         all_val_metric_lst = []
         all_train_metric_lst = []
         
-        cur_exp_folder = f'./pics_and_spike/{args.neuron}_{args.dataset}_{args.epochs}_{args.thr}_{args.T}_bins{args.deg_bins}_{args.model}'
-        if fold == 0:
-            cur_exp_folder = rename_folder_with_suffix(cur_exp_folder)
-        else:
-            cur_exp_folder = fold_folder_name
-        
-        os.makedirs(cur_exp_folder, exist_ok=True)
-        
         for epoch in range(1, args.epochs + 1):
             train_logits = []
             train_labels = []
