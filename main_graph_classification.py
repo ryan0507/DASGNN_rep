@@ -286,10 +286,6 @@ def dataset_selection(root, dataset_name):
     elif dataset_name.lower() == 'pubmed':
         dataset = Planetoid(osp.join(root, 'PubMed'), name = 'PubMed')
         data = dataset[0]
-    elif dataset_name.lower() == 'enzymes':
-        dataset = TUDataset(osp.join(root, 'ENZYMES'), name = 'ENZYMES', use_node_attr=True)
-        dataset = apply_deg_features(dataset, dataset_name, 0)
-        data = dataset[0]
     elif dataset_name.lower() == 'mutag':
         dataset = TUDataset(osp.join(root, 'MUTAG'), name = 'MUTAG', use_node_attr=True)
         data = dataset[0]
