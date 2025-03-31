@@ -191,7 +191,7 @@ class BaseNeuron_degree_feat(nn.Module):
         # Tau and alpha (smoothing factor) should not be updated
         
         # Check v_threshold values for trainable (default: False)
-        if isinstance(self, LAPLIF_deg_feat):
+        if isinstance(self, Deg_feat_neuron):
             self.register_parameter("tau", nn.Parameter(
                 torch.as_tensor(tau, dtype=torch.float32)))
             print('Tau paramter')

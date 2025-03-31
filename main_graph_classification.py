@@ -505,7 +505,7 @@ if __name__ == '__main__':
     print(args)
     
     if './experiment' not in os.listdir():
-        os.makedirs('./experiment')
+        os.makedirs('./experiment', exist_ok=True)
     current_file_name = stdout = f'experiment/{args.dataset}_neuron{args.neuron}_Tval{args.T_val}_ep{args.epochs}_thr{args.thr}_aggr{args.aggr}_{cur_time}_{args.model}.txt'
     log_file = open(current_file_name, 'w')
     original_stdout = sys.stdout
