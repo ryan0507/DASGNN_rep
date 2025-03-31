@@ -395,19 +395,14 @@ def valid_gc(loader,device):
             correct += int((pred == valid_data.y).sum())
         
         logits = torch.cat(logits, dim=0).cpu()
-        print(logits.size())
         labels = torch.cat(labels, dim=0).cpu()
-        print(len(logits))
         
         logits_unique_values, logits_counts = torch.unique(logits, return_counts=True)
         labels_unique_values, labels_counts = torch.unique(labels, return_counts=True)
         
         metric_macro = metrics.f1_score(labels, logits, average='macro')
-        print(len(loader.dataset))
         metric_micro = correct / len(loader.dataset)
         
-        print(f"Logits: {logits_counts}, labels: {labels_counts}" )
-        print(f"correct: {correct}")
         return metric_macro, metric_micro
         
     
