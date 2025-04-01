@@ -379,13 +379,18 @@ def valid_all_batch(data_x, label, edge_index, loader, device):
         metric_micro = metrics.f1_score(labels, logits, average='micro')
         return metric_macro, metric_micro
 
+# tqdm 설정 추가
+tqdm.pandas()
+tqdm.monitor_interval = 0
+tqdm.write = lambda s: sys.stdout.write(s + '\n')
+
 def valid_gc(loader,device):
     with torch.no_grad():
         model.eval()
         logits = []
         labels = []
         correct = 0
-        for batch in tqdm(loader):
+        for batch in loader:
             valid_data = batch.to(device)
             out_spikes_counter_frequency = model(valid_data)
             logits.append(out_spikes_counter_frequency.max(1)[1])
@@ -467,7 +472,7 @@ if __name__ == '__main__':
                         help='Random seed for model. (default: 777)')
     parser.add_argument('--quantize', action = 'store_true', default = False,
                         help = 'Quantize for calibration')
-    parser.add_argument('--bs', type=int, default=1100,
+    parser.add_argument('--bs', type=int, default=5000,
                         help='Number of batch size for mini batching. (default: fullsize)')
     parser.add_argument('--thtr', action = 'store_true', default = False,)
     parser.add_argument('--db_name', type=str, default='Main')
@@ -692,7 +697,9 @@ if __name__ == '__main__':
             train_acc = 0
             out_spikes_counter_frequency_lst = []
             
-            for data in tqdm(train_loader):
+            # 메인 진행률 표시줄
+            pbar = tqdm(train_loader, desc=f'Epoch {epoch}/{args.epochs}', leave=False)
+            for data in pbar:
                 data = data.to(device)
                 optimizer.zero_grad()
                 out_spikes_counter_frequency = model(data)
@@ -708,6 +715,12 @@ if __name__ == '__main__':
                 
                 out_spikes_counter_frequency_lst += out_spikes_counter_frequency.cpu()
                 total_loss += loss.item()
+                
+                # 진행률 업데이트
+                pbar.set_postfix({
+                    'loss': f'{loss.item():.4f}',
+                    'avg_loss': f'{total_loss/(pbar.n+1):.4f}'
+                })
             
             train_logits = torch.cat(train_logits, dim = 0).cpu()
             train_labels = torch.cat(train_labels, dim = 0).cpu()
@@ -731,11 +744,20 @@ if __name__ == '__main__':
                 best_ep = epoch
                 
             end = time.time()
-               
+            
+            # 한 줄로 업데이트되는 출력
             print(
-                f'Fold {fold} Epoch: {epoch:03d}, Train: {train_metric[1]:.4f} Val: {val_metric[1]:.4f}, Test: {test_metric[1]:.4f}, Loss: {total_loss}\
-                \nBest: Macro-{best_test_metric[0]:.4f}, Micro-{best_test_metric[1]:.4f}, Time elapsed {end-start:.2f}s,\
-                Best Test : Macro-{only_test_metric[0]:.4f}, Micro-{only_test_metric[1]:.4f}')
+                f'\rFold {fold} Epoch: {epoch:03d} | '
+                f'Train: {train_metric[1]:.4f} | '
+                f'Val: {val_metric[1]:.4f} | '
+                f'Test: {test_metric[1]:.4f} | '
+                f'Loss: {total_loss:.4f} | '
+                f'Best: Macro-{best_test_metric[0]:.4f}, Micro-{best_test_metric[1]:.4f} | '
+                f'Time: {end-start:.2f}s | '
+                f'Best Test: Macro-{only_test_metric[0]:.4f}, Micro-{only_test_metric[1]:.4f}',
+                end='', flush=True
+            )
+            print()  # 새로운 줄 추가
         plots_lst = []
         timestamp = args.T
         total_score_dict[fold] = (train_metric, best_val_metric, best_test_metric)
